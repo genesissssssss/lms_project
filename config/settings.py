@@ -11,12 +11,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
-from dotenv import load_dotenev
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenev()
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     
     # Our apps
-    'users',  # User management app
+   'users',  # User management app
 ]
 
 MIDDLEWARE = [
