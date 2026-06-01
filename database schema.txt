@@ -1,0 +1,21 @@
+Course
+  ├── title, description, price, level
+  ├── instructor (ForeignKey to User)
+  ├── students (ManyToMany to User)
+  └── created_at, updated_at
+
+Module (belongs to Course)
+  ├── title, description, order
+  └── course (ForeignKey to Course)
+
+Lesson (belongs to Module)
+  ├── title, content_type (video/text/quiz)
+  ├── content (JSON for different types)
+  ├── video_url, duration (if video)
+  ├── quiz_data (if quiz)
+  ├── order, is_free_preview
+  └── module (ForeignKey to Module)Course
+  ├── title, description, price, level
+  ├── instructor (ForeignKey to User)
+  ├── students (ManyToMany to User)
+  └── created_at, updated_at
