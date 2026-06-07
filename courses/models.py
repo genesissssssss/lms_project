@@ -31,3 +31,35 @@ tags = models.CharField(max_length=200, blank=True, help_text="Comma-seperated t
 #pricing
 price = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
 is_free = models.BooleanField(default=False)
+
+#relationships
+
+instructor = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name='courses_teaching',
+    limit_choices_to={'role__in': ['instructor', 'admin']}
+)
+students =models.ManyToManyField(
+    User,
+    related_name='courses_enrolled',
+    blank=True,
+    through='Enrollment'
+)
+
+#statistic
+
+enrolled_count = models.IntegerField(default=0)
+rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.000)
+review_count = models.IntegerField(default=0)
+
+#status
+is_published = models.BooleanField(default=False)
+is_featured = models.BooleanField(default=False)
+
+#Timestamps
+created_at = models.DateTimeField(auto_now_add=True)
+updated_at = models.DateTimeField(auto_now=True)
+published_at = models.DateTimeField(blank=True, null=True)
+
+
