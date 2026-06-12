@@ -88,3 +88,39 @@ def save (self, *args, **kwargs):
                 if lesson.duration:
                     total += lesson.duration
         return total
+    
+    class Module(models.Model):
+        """Course module/section"""
+
+        course = models.ForeignKey(
+            Course,
+            on_delete=models.CASCADE,
+            related_name='modules'
+        )
+        title = models.CharField(max_length=200)
+        description = models.TextField(blank=True)
+        order = models.IntegerField(help_text="Order in which module appears")
+        estimated_time = models.IntegerField(blank=True, null=True, help_text="Minutes to Complete")
+        
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
+
+        class Meta:
+            ordering = ['order']
+            unique_together = ['course', 'order']
+
+        def __str__(self):
+            return f"{self.course.title} - {self.title}"
+        
+        @property
+        def lesson_count(self):
+            return self.lesson.count()
+        
+        class Lesson(models.Model):
+            """Indiviual lesson"""
+
+            class ContenType(models.TextChoices0):
+                VIDEO = 'video', 'Video Lesson'
+                TEXT = 'text', 'Text Lesson'
+                QUIZ = 'quiz', 'Quiz'
+                ASSIGNMENT = 'assignment', 'Assignment'
