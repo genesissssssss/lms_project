@@ -123,4 +123,33 @@ def save (self, *args, **kwargs):
                 VIDEO = 'video', 'Video Lesson'
                 TEXT = 'text', 'Text Lesson'
                 QUIZ = 'quiz', 'Quiz'
-                ASSIGNMENT = 'assignment', 'Assignment'
+                
+        #basic info
+        
+        module =  models.ForeignKey(
+            Module,
+            on_delete=models.CASCADE,
+            related_name='lessons'
+        )
+        title = models.Charfield(max_length=200)
+        content_type = models.CharField(max_length=20, choices=ContentType.choices)
+        order = models.IntegerField(help_text="Order within module")
+
+        #fields
+        description = models.TextField(blank=True)
+        is_free_preview = models.BooleanField(default=False, help_text="Allow preview without enrollment")
+
+        #video content
+        video_url = models.URLField(blank=True, help_text="Youtube/vimeo url or hosted video")
+        video_file = models.FileField(upload_to='course_videos/', blank=True, null=True)
+        duration = models.IntegerField(blank=True, null=True, help_text="Duration in minutes")
+
+        #For text content
+        text_content = models.TextField(blank=True, help_text="HTML or markdown content")
+
+        #for quizess(JSON storage)
+        quiz_data = models.JSONField(blank=True, default=dict, help_text="question and answer")
+        passing_score = models.IntegerField(default=70, validators=[MinValueValidator(0), MaxValueValidator(100)])
+
+        # for assignments
+        assignment_instruction = models.TextField(blank=True)
