@@ -153,3 +153,85 @@ def save (self, *args, **kwargs):
 
         # for assignments
         assignment_instruction = models.TextField(blank=True)
+
+        #attachments
+        attachments = models.FileField(upload_to='lesson_attachments/', blank=True, null=True)
+
+        #statistic
+        view_count = models.IntegerField(default=0)
+        completed_count = models.IntegerField(default=0)
+        created_at = models.DateTimeField(auto_now_add=True)
+        uploded_at = models.DateTimeField(auto_now_add=True)
+
+        class Meta:
+            ordering = ['order']
+            unique_together = ['module', 'order']
+
+        def __str__(self):
+            return f"{self.module.title} - {self.title} "
+        
+        @property
+        def is_video(self):
+            return self.content_type == self.ContentType.VIDEO
+        @property
+        def is_text(self):
+            return self.content_type == self.ContentType.TEXT
+        
+        @property
+        def is_quiz(self):
+            return self.content_type == self.ContentType.QUIZ
+        
+        def get_completion_percentage(self):
+            """Calculate Completion rate for this grade"""
+            if self.view_count == 0:
+                return 0
+            return (self.completed_count / self.view_count) * 100
+        
+        class Enrollment(models.Model):
+            """Track student enrollment in courses"""
+
+            class Status(models.TextChoices):
+                ACTIVE = 'active', 'Active'
+                COMPLETED = 'completed', 'Completed'
+                DROPPED = 'dropped', 'Dropped'
+
+            student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
+            course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+
+            status = models.CharField(max_length=20, choices=Status.choices, default=Status.ACTIVE)
+            enrolled_at = models.DateTimeField(auto_now_add=True)
+            completed_at = models.DateTimeField(blank=True, null=True)
+
+            #progress Tracking
+            progress_percentage = models.IntegerField(default=0)
+            last_accessed = models.DateTimeField(auto_now=True)
+
+            class Meta:
+                unique_together = ['student', 'course']
+                ordering = ['-enrolled_at']
+            
+            def __str__(self):
+                return f"{self.student.username} -> {self.course.title}"
+            
+            def update_progres(self):
+                """Calculate Course progress"""
+                total_lesson = self.course.total_lesson
+                if total_lesson == 0:
+                    return 0
+            
+            completed_lessons = LessonProgress.objects.filter(
+                enrollment=self,
+                is_completed=True
+            ).count()
+            
+            self.progress_percentage = int((completed_lessons/ total_lessons)* 100)
+
+            if self.progress_percentage == 100 and self.status != self.Status.COMPLETED:
+                self.status = self.Status.COMPLETED
+                self.completed_at = timezone.now()
+
+
+                self.save(update_fields=['progress_percentage', 'status', 'completed_at'])
+                return self.progress_percentage
+            
+            cl
