@@ -161,7 +161,7 @@ def save (self, *args, **kwargs):
         view_count = models.IntegerField(default=0)
         completed_count = models.IntegerField(default=0)
         created_at = models.DateTimeField(auto_now_add=True)
-        uploded_at = models.DateTimeField(auto_now_add=True)
+        uploaded_at = models.DateTimeField(auto_now_add=True)
 
         class Meta:
             ordering = ['order']
@@ -213,25 +213,64 @@ def save (self, *args, **kwargs):
             def __str__(self):
                 return f"{self.student.username} -> {self.course.title}"
             
-            def update_progres(self):
-                """Calculate Course progress"""
-                total_lesson = self.course.total_lesson
-                if total_lesson == 0:
-                    return 0
+            def update_progress(self):
+              total_lessons = self.course.total_lessons
+              if total_lessons == 0:
+                  return 0
+              completed_lessons = LessonProgress.objects.filter(
+                  enrollment=self,
+                  is_completed=True
+                  ).count()
             
-            completed_lessons = LessonProgress.objects.filter(
-                enrollment=self,
-                is_completed=True
-            ).count()
-            
-            self.progress_percentage = int((completed_lessons/ total_lessons)* 100)
+            self.progress_percentage = int((completed_lessons/ total_lesson)* 100)
 
             if self.progress_percentage == 100 and self.status != self.Status.COMPLETED:
                 self.status = self.Status.COMPLETED
                 self.completed_at = timezone.now()
 
-
                 self.save(update_fields=['progress_percentage', 'status', 'completed_at'])
                 return self.progress_percentage
             
-            cl
+            class LessonProgress(models.Model):
+                """Track individual lesson completion"""
+
+                enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name= "lesson_progress")
+                lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="progress_record")
+
+                is_completed = models.BooleanField(default=False)
+                completed_at = models.DateTimeField(blank=True, null= True)
+                last_watched_position =  models.IntegerField(default=0, help_text="Video position in seconds")
+                time_spent = models.IntegerField(default=0, help_text="Minutes spent on this lesson")
+
+                quiz_score = models.IntegerField(blank=True, null=True)
+                quiz_answer = models.JSONField(blank=True, default=dict)
+
+                class Meta:
+                    unique_together = ['enrollment', 'lesson']
+                
+                def __str__(self):
+                    status = "✓" if self.is_completed else "O"
+                    return f"{status} {self.enrollment.student.username}: {self.lesson.title}"
+                
+                def complete_lesson(self):
+                    """Mark lesson as completed"""
+
+                    if not self.is_completed:
+                    self.is_completed = True
+                    self.is_completed_at = timezone.now()
+                    self.save()
+
+                    #update progress
+                    self.enrollment.update_progress()
+
+                def save_quiz_score(self, score, answers):
+                    """Save quiz resultt"""
+                    self.quiz_score = score
+                    self.quiz_answer = answers
+                    self.save()
+                    #auto complete if pass
+
+                    if score >= self.lesson.passing_score:
+                        self.complete_lesson()
+
+
