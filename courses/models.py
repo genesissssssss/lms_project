@@ -222,7 +222,7 @@ def save (self, *args, **kwargs):
                   is_completed=True
                   ).count()
             
-            self.progress_percentage = int((completed_lessons/ total_lesson)* 100)
+            self.progress_percentage = int((completed_lessons/ total_lessons)* 100)
 
             if self.progress_percentage == 100 and self.status != self.Status.COMPLETED:
                 self.status = self.Status.COMPLETED
@@ -256,12 +256,15 @@ def save (self, *args, **kwargs):
                     """Mark lesson as completed"""
 
                     if not self.is_completed:
-                    self.is_completed = True
-                    self.is_completed_at = timezone.now()
-                    self.save()
+                     self.is_completed = True
+                     self.completed_at = timezone.now()
+                     self.save()
 
-                    #update progress
-                    self.enrollment.update_progress()
+                     #update progress
+                     self.enrollment.update_progress()
+                    
+
+
 
                 def save_quiz_score(self, score, answers):
                     """Save quiz resultt"""
@@ -272,5 +275,5 @@ def save (self, *args, **kwargs):
 
                     if score >= self.lesson.passing_score:
                         self.complete_lesson()
-
+                        
 
