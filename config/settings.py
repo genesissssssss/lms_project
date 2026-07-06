@@ -42,10 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
+    'django_filters',
     
     # Our apps
-   'users',  # User management app
+    'users',
+    'courses', 
 ]
 
 MIDDLEWARE = [
@@ -113,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
@@ -125,7 +128,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files 
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 # Static & Media files
@@ -139,5 +142,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model (we'll create this)
+# Custom user model 
 AUTH_USER_MODEL = 'users.User'
