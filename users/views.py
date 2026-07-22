@@ -59,3 +59,8 @@ def dashboard(request):
     
     return render(request, 'users/dashboard.html', context)
 
+@login_required
+def profile(request):
+    """User profile page"""
+    return render(request, 'users/profile.html', {'user': request.user})
+
