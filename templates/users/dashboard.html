@@ -1,0 +1,133 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Dashboard - LMS Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">My Dashboard</h1>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-book"></i></div>
+                <div class="stat-number">{{ total_courses }}</div>
+                <div class="stat-label">Enrolled Courses</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-check-circle text-success"></i></div>
+                <div class="stat-number">{{ completed_courses }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-spinner text-warning"></i></div>
+                <div class="stat-number">{{ in_progress_courses }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-chart-line text-info"></i></div>
+                <div class="stat-number">{{ avg_progress }}%</div>
+                <div class="stat-label">Average Progress</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Courses -->
+    <h3 class="mb-3">My Courses</h3>
+    <div class="row mb-4">
+        {% if enrollments %}
+            {% for enrollment in enrollments %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>{{ enrollment.course.title }}</h5>
+                            <p class="text-muted small">{{ enrollment.course.short_description|truncatechars:60 }}</p>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: {{ enrollment.progress_percentage }}%">
+                                    {{ enrollment.progress_percentage }}%
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-{% if enrollment.status == 'completed' %}success{% elif enrollment.status == 'active' %}primary{% else %}secondary{% endif %}">
+                                    {{ enrollment.get_status_display }}
+                                </span>
+                                <a href="{% url 'course_detail' enrollment.course.slug %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-play"></i> Continue
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    You haven't enrolled in any courses yet. 
+                    <a href="{% url 'course_list' %}" class="alert-link">Browse courses</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity -->
+    {% if recent_completions %}
+        <h3 class="mb-3">Recent Activity</h3>
+        <div class="list-group mb-4">
+            {% for progress in recent_completions %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Completed <strong>{{ progress.lesson.title }}</strong>
+                            from <a href="{% url 'course_detail' progress.enrollment.course.slug %}">
+                                {{ progress.enrollment.course.title }}
+                            </a>
+                        </div>
+                        <small class="text-muted">{{ progress.completed_at|timesince }} ago</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Recommended Courses -->
+    <h3 class="mb-3">Recommended For You</h3>
+    <div class="row">
+        {% if recommended_courses %}
+            {% for course in recommended_courses %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5>{{ course.title }}</h5>
+                            <p class="text-muted small">{{ course.short_description|truncatechars:60 }}</p>
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-secondary">{{ course.get_level_display }}</span>
+                                {% if course.is_free %}
+                                    <span class="badge bg-success">Free</span>
+                                {% else %}
+                                    <span class="badge bg-primary">${{ course.price }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'course_detail' course.slug %}" class="btn btn-outline-primary w-100">
+                                View Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="text-muted">No recommendations available.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

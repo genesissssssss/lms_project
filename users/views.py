@@ -1,8 +1,28 @@
-from django.shortcuts import render
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.contrib import messages
 from django.db.models import Count, Sum, Avg
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from courses.models import Enrollment, Course, LessonProgress
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_home(request):
+    """API home endpoint"""
+    return Response({
+        'message': 'Welcome to LMS API',
+        'version': '1.0.0',
+        'endpoints': {
+            'auth': '/api/token/',
+            'users': '/api/users/',
+            'courses': '/api/courses/',
+        }
+    })
 
 @login_required
 def dashboard(request):
@@ -63,4 +83,18 @@ def dashboard(request):
 def profile(request):
     """User profile page"""
     return render(request, 'users/profile.html', {'user': request.user})
+
+def register(request):
+    """User registration view"""
+
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Register successfull!')
+            return redirect(dashboard)
+        else:
+            form = UserCreationForm()
+        return render(request, 'users/register.html',{'form': form})
 
